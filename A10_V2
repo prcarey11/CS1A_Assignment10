@@ -1,0 +1,464 @@
+/* Please replace:  Assignment 2 (17/20) */
+
+public class Foothill
+{
+   
+   public static void main (String[] args)
+   {
+      int k;
+      Student student;
+      
+      Student[] myClass = { new Student("smith","fred", 95), 
+         new Student("bauer","jack",123),
+         new Student("jacobs","carrie", 195), 
+         new Student("renquist","abe",148),
+         new Student("3ackson","trevor", 108), 
+         new Student("perry","fred",225),
+         new Student("loceff","fred", 44), 
+         new Student("stollings","pamela",452),
+         new Student("charters","rodney", 295), 
+         new Student("cassar","john",321),
+      };
+      
+      // instantiate a StudArrUtilObject
+      StudentArrayUtilities myStuds = new StudentArrayUtilities();
+      
+      // we can add stdunts manually and individually
+      myStuds.addStudent( new Student("bartman", "petra", 102) );
+      myStuds.addStudent( new Student("charters","rodney", 295));
+      
+      // if we happen to have an array available, we can add students in loop.
+      for (k = 0; k < myClass.length; k++)
+         myStuds.addStudent( myClass[k] );
+
+      System.out.println( myStuds.toString("Before: "));
+      
+      myStuds.arraySort();
+      System.out.println( myStuds.toString("Sorting by default: "));
+ 
+      Student.setSortKey(Student.SORT_BY_FIRST);
+      myStuds.arraySort();
+      System.out.println( myStuds.toString("Sorting by first name: "));
+      
+      Student.setSortKey(Student.SORT_BY_POINTS);
+      myStuds.arraySort();
+      System.out.println( myStuds.toString("Sorting by total points: "));
+      
+      // test median
+      System.out.println("Median of evenClass = "
+         +  myStuds.getMedianDestructive() + "\n");
+      
+      // various tests of removing and adding too many students
+      for (k = 0; k < 100; k++)
+      {
+         if ( (student = myStuds.removeStudent()) != null)
+            System.out.println("Removed " + student);
+         else
+         {
+            System.out.println("Empty after " + k + " removes.");
+            break;
+         }
+      }
+
+      for (k = 0; k < 100; k++)
+      {
+         if (!myStuds.addStudent(new Student("first", "last", 22)))
+         {
+            System.out.println("Full after " + k + " adds.");
+            break;
+         }
+      }
+   }
+}
+
+class Student
+{
+   private String lastName;
+   private String firstName;
+   private int totalPoints;
+   private static int sortCriteria;
+
+   public static final String DEFAULT_NAME = "zz-error";
+   public static final int DEFAULT_POINTS = 0;
+   public static final int MAX_POINTS = 1000;
+   public static final int SORT_BY_FIRST = 88;
+   public static final int SORT_BY_LAST = 98;
+   public static final int SORT_BY_POINTS = 108;
+   public static final int SORT_KEY_MAX = 200;
+
+   // constructor requires parameters - no default supplied
+   public Student( String last, String first, int points )
+   {
+      if ( !setLastName( last ) )
+         lastName = DEFAULT_NAME;
+      if ( !setFirstName( first ) )
+         firstName = DEFAULT_NAME;
+      if ( !setPoints( points ) )
+         totalPoints = DEFAULT_POINTS;
+   }
+
+   public String getLastName() { return lastName; }
+   public String getFirstName() { return firstName; } 
+   public int getTotalPoints() { return totalPoints; }
+   public static int getSortKey() {return sortCriteria; }
+
+   public boolean setLastName( String last )
+   {
+      if ( !validString( last ) )
+         return false;
+      lastName = last;
+      return true;
+   }
+
+   public boolean setFirstName( String first )
+   {
+      if ( !validString( first ) )
+         return false;
+      firstName = first;
+      return true;
+   }
+
+   public boolean setPoints( int pts )
+   {
+      if ( !validPoints( pts ) )
+         return false;
+      totalPoints = pts;
+      return true;
+   }
+   
+   //  added this setSortKey mutator to look for valid sortKey values.
+   public static boolean setSortKey( int key )
+   {
+      if ( !validSortKey( key ) )
+      {
+         sortCriteria = SORT_BY_LAST;
+         return false;
+      }
+      sortCriteria = key;
+      return true;
+   }
+   
+   // could be an instance method and, if so, would take one parameter
+   // Teacher used switch & case (see below) which is more concise than mine version
+   public static int compareTwoStudents( Student firstStud, Student secondStud )
+   {
+      switch (sortCriteria)
+      {
+      case SORT_BY_FIRST:
+         return firstStud.firstName.compareToIgnoreCase(secondStud.firstName);
+      case SORT_BY_LAST:
+         return firstStud.lastName.compareToIgnoreCase(secondStud.lastName);
+      case SORT_BY_POINTS:
+         return firstStud.totalPoints - secondStud.totalPoints;
+      default:
+         return 0;
+      }
+   }
+   
+   // public static int compareTwoStudents( int sorterKey, Student firstStud, 
+   // Student secondStud )
+/*   public static int compareTwoStudents( Student firstStud, 
+         Student secondStud )
+   {
+      int result = 0;
+      int keyResult;
+      keyResult = sortKey( sortCriteria );
+      // this line sorts based on the Student's first name (case insensitive)
+      if ( keyResult == SORT_BY_FIRST )
+         result = firstStud.firstName.compareToIgnoreCase(secondStud.firstName);
+      // this line sorts based on last name only (case insensitive)
+      else if ( keyResult == SORT_BY_LAST )
+         result = firstStud.lastName.compareToIgnoreCase( secondStud.lastName );
+      else if ( keyResult == SORT_BY_POINTS )
+      {
+         if ( firstStud.totalPoints > secondStud.totalPoints )
+            result = 1;
+         else if ( firstStud.totalPoints == secondStud.totalPoints )
+            result = 0;
+         else
+            result = -1;
+      }
+      return result;
+   }
+*/
+/*
+   public String toString()
+   {
+      String resultString;
+
+      resultString = " "+ lastName 
+         + ", " + firstName
+         + " points: " + totalPoints
+         + "\n";
+      return resultString;
+   }
+*/
+   
+   private static boolean validString( String testStr )
+   {
+      if ( testStr != null && Character.isLetter( testStr.charAt(0) ) )
+         return true;
+      return false;
+   }
+
+   private static boolean validPoints( int testPoints )
+   {
+      if (testPoints >= 0 && testPoints <= MAX_POINTS)
+         return true;
+      return false;
+   }
+   
+   private static boolean validSortKey( int key )
+   {
+      if (key <= 0 || key >= SORT_KEY_MAX)
+         return false;
+      return true;
+   }
+   // again, the teacher used switch and & case instead of if statements:
+   /*     *     *     *     *     *     *     *     *     *     *     *     *
+   static boolean setSortKey( int key )
+   {
+      switch (key)
+      {
+      case SORT_BY_FIRST:
+      case SORT_BY_LAST:
+      case SORT_BY_POINTS:
+         sortCriteria = key;
+         return true;
+      default:
+        // should never get here, but compiler wants it here or after switch
+         return false;
+      }
+   }
+   */
+   
+   
+   // add a new method sortKey()
+   private static int sortKey( int sorter )
+   {
+      int sorted = SORT_BY_LAST;
+      
+   if ( sorter <= SORT_BY_FIRST )
+      {
+      sorted = SORT_BY_FIRST;
+      }
+   else if ( sorter > SORT_BY_FIRST && sorter < SORT_BY_POINTS )
+      {
+      sorted = SORT_BY_LAST;
+      }
+   else if ( sorter >= SORT_BY_POINTS && sorter <= SORT_KEY_MAX )
+      {
+      sorted = SORT_BY_POINTS;
+      }
+   return sorted;
+   }
+}
+
+class StudentArrayUtilities
+{
+   /* Assignment 10: 
+   1.  add addStudent() and removeStudent() as instance methods.
+   2.  previous static methods become instance methods:
+       sort() - to call use someUtilObj.sort()
+       toString()
+   */
+   public static final int MAX_STUDENTS = 20;
+   private Student[] theArray;
+   private int numStudents = 0;
+   
+   /*     *     *     *     *     *     *     *     *     *     *     *     */
+   /*     *     *     Work to be done here    *     *     *     *     *     */
+   /*     *     *     *     *     *     *     *     *     *     *     *     */
+   public boolean addStudent( Student stud )
+   {
+      if ( stud == null || numStudents > MAX_STUDENTS )
+         return false;
+      theArray[numStudents] = stud;
+      numStudents = numStudents + 1;
+      return true;
+   }
+   
+   public Student removeStudent()
+   {
+      Student[] stud;
+      
+      if ( numStudents == 0 )
+         return null;
+      stud = theArray[numStudents];
+      numStudents = numStudents - 1;
+      return stud;
+   }
+   
+   /*     *     *     *     *     *     *     *     *     *     *     *     */
+   /*     *     *     *     *     *     *     *     *     *     *     *     */
+   // changed printArray() to call toString() and print to console
+   
+   public static void printArray( String title, Student[] data )
+   {
+      String output = "";
+
+      // build the output string from the individual Students:
+      for ( int k = 0; k < data.length; k++ )
+         output += " "+ data[k].toString();
+
+      System.out.println( title +"\n"+ output );
+   }
+
+   // returns true if a modification was made to the array
+   /*     *     *     *     *     *     *     *     *     *     *     *     */
+   /*     *     *     Work to be done here    *     *     *     *     *     */
+   /*     *     *     *     *     *     *     *     *     *     *     *     */
+   // now a private helper instance method (took out the Student[] data parameter.
+   private boolean floatLargestToTop( int top)
+   {
+      boolean changed = false;
+      Student temp;
+      // compare with client call to see where the loop stops
+      for ( int k = 0; k < top; k++ )
+         if ( Student.compareTwoStudents( data[k], data[k+1]) > 0 )
+         {
+            temp = data[k];
+            data[k] = data[k+1];
+            data[k+1] = temp;
+            changed = true;
+         }
+      return changed;
+   }
+
+   // public call definition of arraySort() - assumes Student
+   // class has a compareTo()
+  
+   /*     *     *     *     *     *     *     *     *     *     *     *     */
+   /*     *     *     Work to be done here    *     *     *     *     *     */
+   /*     *     *     *     *     *     *     *     *     *     *     *     */
+   public void arraySort()
+   {
+      for ( int k = 0; k < theArray.length; k++ )
+         // compare with method definition to see where inner loop stops
+         if ( !floatLargestToTop( theArray, theArray.length-1-k ) )
+            return;
+   }
+   /*     *     *     *     *     *     *     *     *     *     *     *     */
+   public static double getMedianDestructive()
+   {
+      double med=0.0;  // default median value is 0.0
+      // variable needed to preserve the initially passed sort key
+      int savedSortKey;
+      // assign the current sort key to the this variable:
+      savedSortKey = Student.getSortKey();
+      // switch to the sort by points sort key:
+      Student.setSortKey( Student.SORT_BY_POINTS );
+      if ( numStudents == 0 )
+         med = 0.0;
+      else if ( numStudents == 1 )
+      {
+         med = theArray[0].getTotalPoints();
+      }
+      // for an odd number of students if we divide by 2 the Modulus is 1.0:
+      else if ( array.length % 2 == 1.0 )
+      {
+         int x = array.length/2;
+         med = array[x].getTotalPoints();
+      }
+      // for an even number of students if we divide by 2 the Modulus is 0.0:
+      else if ( array.length % 2 == 0.0 )
+      {
+         int x = array.length/2;
+         med = (( array[x-1].getTotalPoints() ) 
+               +  (array[x].getTotalPoints() ))/2.0;
+      }
+      // restore the original sort key before exiting:
+      Student.setSortKey( savedSortKey );
+      return med;
+   }
+   public String toString(String title)
+   {
+      String resultString;
+
+      resultString = " "+ theArray 
+    //     + ", " + firstName
+    //     + " points: " + totalPoints
+         + "\n";
+      return resultString;
+   }
+}
+
+/*-------------------- Paste of Run from Console ----------------------------
+Before Sorting
+  zz-error, David points: 34
+  Cox, Doug points: 45
+  Schlobotnik, Joel points: 243
+  Johnson, Johnny points: 167
+  DeWayne, Travis points: 538
+  Baker, Cole points: 277
+  Yorke, Joseph points: 375
+  Nam, Justin points: 629
+  Carey, Philip points: 898
+  Norris, Jared points: 578
+  Turner, Derrick points: 435
+  Jean, Ethan points: 623
+  Geiger, Nathan points: 133
+  Espiritu, Zach points: 517
+  Rincon, Jake points: 324
+  Swearingen, Ryan points: 621
+
+After Sorting Default (Last) Name:
+  Baker, Cole points: 277
+  Carey, Philip points: 898
+  Cox, Doug points: 45
+  DeWayne, Travis points: 538
+  Espiritu, Zach points: 517
+  Geiger, Nathan points: 133
+  Jean, Ethan points: 623
+  Johnson, Johnny points: 167
+  Nam, Justin points: 629
+  Norris, Jared points: 578
+  Rincon, Jake points: 324
+  Schlobotnik, Joel points: 243
+  Swearingen, Ryan points: 621
+  Turner, Derrick points: 435
+  Yorke, Joseph points: 375
+  zz-error, David points: 34
+
+After Sorting by the First Name:
+  Baker, Cole points: 277
+  zz-error, David points: 34
+  Turner, Derrick points: 435
+  Cox, Doug points: 45
+  Jean, Ethan points: 623
+  Rincon, Jake points: 324
+  Norris, Jared points: 578
+  Schlobotnik, Joel points: 243
+  Johnson, Johnny points: 167
+  Yorke, Joseph points: 375
+  Nam, Justin points: 629
+  Geiger, Nathan points: 133
+  Carey, Philip points: 898
+  Swearingen, Ryan points: 621
+  DeWayne, Travis points: 538
+  Espiritu, Zach points: 517
+
+After Sorting Total Points:
+  zz-error, David points: 34
+  Cox, Doug points: 45
+  Geiger, Nathan points: 133
+  Johnson, Johnny points: 167
+  Schlobotnik, Joel points: 243
+  Baker, Cole points: 277
+  Rincon, Jake points: 324
+  Yorke, Joseph points: 375
+  Turner, Derrick points: 435
+  Espiritu, Zach points: 517
+  DeWayne, Travis points: 538
+  Norris, Jared points: 578
+  Swearingen, Ryan points: 621
+  Jean, Ethan points: 623
+  Nam, Justin points: 629
+  Carey, Philip points: 898
+
+Median of evenClass = 405.0
+Successfully preserved the sort key. 
+Median of oddClass = 435.0
+Median of smallClass = 898.0
+Median of noClass = 0.0
+------------------------------------------------------------------------- */
